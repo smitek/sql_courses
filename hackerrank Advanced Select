@@ -1,0 +1,14 @@
+Occupations -> Pivot the Occupation column in OCCUPATIONS so that each Name is sorted alphabetically and displayed underneath its corresponding Occupation. The output column headers should be Doctor, Professor, Singer, and Actor, respectively.
+               Note: Print NULL when there are no more names corresponding to an occupation.
+
+WITH RANKEDOCCUPATIONS AS (
+    SELECT NAME, OCCUPATION, ROW_NUMBER() OVER (PARTITION BY OCCUPATION ORDER BY NAME) AS ROW_NUM
+    FROM OCCUPATIONS )
+SELECT
+    MAX(CASE WHEN OCCUPATION = 'DOCTOR' THEN NAME END) AS DOCTOR,
+    MAX(CASE WHEN OCCUPATION = 'PROFESSOR' THEN NAME END) AS PROFESSOR,
+    MAX(CASE WHEN OCCUPATION = 'SINGER' THEN NAME END) AS SINGER,
+    MAX(CASE WHEN OCCUPATION = 'ACTOR' THEN NAME END) AS ACTOR
+FROM RANKEDOCCUPATIONS
+GROUP BY ROW_NUM
+ORDER BY ROW_NUM;
