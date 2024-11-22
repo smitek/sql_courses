@@ -14,6 +14,26 @@ SELECT CITY.NAME
     JOIN COUNTRY ON CITY.COUNTRYCODE = COUNTRY.CODE
     WHERE COUNTRY.CONTINENT = 'AFRICA';
 
+Average Population of Each Continent -> Given the CITY and COUNTRY tables, query the names of all the continents (COUNTRY.Continent) and their respective average city populations (CITY.Population) rounded down to the nearest integer.
+                    Note: CITY.CountryCode and COUNTRY.Code are matching key columns.
 
+SELECT COUNTRY.CONTINENT, FLOOR(AVG(CITY.POPULATION))
+    FROM COUNTRY, CITY
+    WHERE CITY.COUNTRYCODE = COUNTRY.CODE GROUP BY COUNTRY.CONTINENT
+
+SELECT 
+    IF(GRADE >= 8, NAME, NULL), 
+    GRADE, 
+    MARKS
+    FROM 
+        STUDENTS, 
+        GRADES
+    WHERE 
+        MARKS >= MIN_MARK 
+        AND MARKS <= MAX_MARK
+    ORDER BY
+        GRADE DESC,
+        IF(GRADE >= 8, NAME, NULL) ASC,
+        IF(GRADE < 8, MARKS, NULL) ASC;
 
 
