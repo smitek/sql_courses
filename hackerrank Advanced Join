@@ -12,7 +12,19 @@ SELECT F1.X, F1.Y
 Interviews -> Samantha interviews many candidates from different colleges using coding challenges and contests. Write a query to print the contest_id, hacker_id, name, and the sums of total_submissions, total_accepted_submissions, total_views, and total_unique_views for each contest sorted by contest_id. Exclude the contest from the result if all four sums are .
             Note: A specific contest can be used to screen candidates at more than one college, but each college only holds  screening contest.
 
-...
+select ct.contest_id, ct.hacker_id, ct.name,
+coalesce(sum(ss.total_submissions),0) total_subs, 
+coalesce(sum(total_accepted_submissions),0) accepted_subs, 
+coalesce(sum(total_views),0) total_views, 
+coalesce(sum(total_unique_views),0) unique_views
+from contests ct
+left join colleges cl on ct.contest_id = cl.contest_id
+left join challenges ch on cl.college_id = ch.college_id
+left join view_stats vs on ch.challenge_id = vs.challenge_id
+left join submission_stats ss on ch.challenge_id = ss.challenge_id
+group by ct.contest_id, ct.hacker_id, ct.name
+having total_subs + accepted_subs + total_views + unique_views >0
+order by ct.contest_id;
 
 Draw The Triangle 1 -> P(R) represents a pattern drawn by Julia in R rows. The following pattern represents P(5):
                     Write a query to print the pattern P(20).
@@ -51,12 +63,28 @@ SQL Project Planning -> You are given a table, Projects, containing three column
                       If the End_Date of the tasks are consecutive, then they are part of the same project. Samantha is interested in finding the total number of different projects completed.
                       Write a query to output the start and end dates of projects listed by the number of days it took to complete the project in ascending order. If there is more than one project that have the same number of completion days, then order by the start date of the project.
 
-...
+select start_date, min(end_date)
+from
+    (select start_date 
+     from projects
+     where start_date not in (select end_date 
+                            from projects)) as st, 
+    (select end_date
+     from projects
+     where end_date not in (select start_date
+                            from projects)) as en
+where start_date < end_date
+group by start_date
+order by datediff(start_date, min(end_date)) desc, start_date;
 
 Placements -> You are given three tables: Students, Friends and Packages. Students contains two columns: ID and Name. Friends contains two columns: ID and Friend_ID (ID of the ONLY best friend). Packages contains two columns: ID and Salary (offered salary in $ thousands per month).
             Write a query to output the names of those students whose best friends got offered a higher salary than them. Names must be ordered by the salary amount offered to the best friends. It is guaranteed that no two students got same salary offer.
 
-...
+WITH CTE1 AS (SELECT S.ID, S.NAME, P.SALARY, F.FRIEND_ID 
+        FROM STUDENTS S JOIN FRIENDS F ON F.ID =S.ID JOIN PACKAGES P ON P.ID=S.ID), 
+        CTE2 AS ( SELECT C.ID AS STUDENT_ID, C.NAME AS STUDENT_NAME, C.SALARY AS STUDENT_SALARY, C.FRIEND_ID AS B_F_ID, P.SALARY AS B_F_SALARY FROM CTE1 C JOIN PACKAGES P ON P.ID = C.FRIEND_ID) 
+        SELECT STUDENT_NAME 
+        FROM CTE2 WHERE STUDENT_SALARY < B_F_SALARY ORDER BY B_F_SALARY;
 
 15 Days of Learning SQL -> Julia conducted a  days of learning SQL contest. The start date of the contest was March 01, 2016 and the end date was March 15, 2016.
                         Write a query to print total number of unique hackers who made at least  submission each day (starting on the first day of the contest), and find the hacker_id and name of the hacker who made maximum number of submissions each day. If more than one such hacker has a maximum number of submissions, print the lowest hacker_id. The query should print this information for each day of the contest, sorted by the date.
